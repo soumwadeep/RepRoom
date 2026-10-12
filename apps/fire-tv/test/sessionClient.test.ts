@@ -153,6 +153,17 @@ it('backs off when polling fails and calls the picture stale once it is old', as
   const {client, clock, timer} = harness([
     {json: {session_id: 'abc'}},
     {json: state(3)},
+    {
+      json: {
+        text: 'keep going',
+        source: 'rules',
+        label: 'built-in rules',
+        model: null,
+        latency_ms: null,
+        reason: '',
+        rep_key: 'v1:squat:3:',
+      },
+    },
     {throw: new Error('connection refused')},
     {throw: new Error('connection refused')},
   ]);
@@ -226,6 +237,49 @@ it('stays stopped even when the server never hears the farewell', async () => {
   await client.start();
   await client.stop();
   expect(client.status).toBe(STATUS.STOPPED);
+});
+
+it('fetches one cue per change in the rep count, not one per poll', async () => {
+  const cue = {
+    text: 'Sit deeper before you drive up.',
+    source: 'rules',
+    label: 'built-in rules',
+    model: null,
+    latency_ms: null,
+    reason: 'no region',
+    rep_key: 'v1:squat:3:',
+  };
+  const {client, timer, fetcher} = harness([
+    {json: {session_id: 'abc'}},
+    {json: state(3)},
+    {json: cue},
+    {json: state(3)},
+    {json: state(4)},
+    {json: {...cue, rep_key: 'v1:squat:4:'}},
+  ]);
+  await client.start();
+
+  await timer.fire();
+  expect(client.viewModel?.coach?.text).toBe('Sit deeper before you drive up.');
+  expect(client.viewModel?.coach?.label).toBe('COACH · BUILT-IN RULES');
+
+  await timer.fire();
+  expect(fetcher.calls.filter((c) => c.url.endsWith('/cue'))).toHaveLength(1);
+
+  await timer.fire();
+  expect(fetcher.calls.filter((c) => c.url.endsWith('/cue'))).toHaveLength(2);
+});
+
+it('hides the coaching line when the cue request fails', async () => {
+  const {client, timer} = harness([
+    {json: {session_id: 'abc'}},
+    {json: state(3)},
+    {throw: new Error('coach down')},
+  ]);
+  await client.start();
+  await timer.fire();
+  expect(client.viewModel?.hero.value).toBe(3);
+  expect(client.viewModel?.coach).toBeNull();
 });
 
 it('refuses a client with no address, because a HUD pointed at nothing is worse than an error', () => {

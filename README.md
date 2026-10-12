@@ -30,8 +30,8 @@ a folder like `Github Repos` fails at the bundle step with
 
 ```bash
 scripts/setup.sh                               # venv, deps, pose models (~14 MB)
-.venv/bin/python -m pytest packages services   # 70 tests
-cd apps/fire-tv && npm install && npx jest     # 44 tests
+.venv/bin/python -m pytest packages services   # 95 tests
+cd apps/fire-tv && npm install && npx jest     # 51 tests
 
 scripts/dev.sh                        # API on http://localhost:8420
 open http://localhost:8420/capture    # camera page; press Start, do squats
@@ -68,9 +68,12 @@ assuming it did.
 | Rep counting, discards, pause and resume | Verified | 52 engine tests on synthetic landmark arcs |
 | Form checks flag the fault they target | Verified | same suite; each check has a passing and a failing fixture |
 | MediaPipe recovers a pose from a JPEG | Verified | 4 integration tests, 20–100 ms/frame measured on Apple M1 |
-| The API serves that over HTTP | Verified | 16 service tests plus a live uvicorn smoke run |
-| The HUD refuses to render unmeasured numbers | Verified | 44 app tests, including screen-flow tests against a scripted API |
+| The API serves that over HTTP | Verified | 21 service tests plus live uvicorn smoke runs |
+| The HUD refuses to render unmeasured numbers | Verified | 51 app tests, including screen-flow tests against a scripted API |
 | The app builds and runs on the Fire TV simulator | Verified | signed `.vpkg` for three architectures; `com.reproom.tv.main` running in the Vega Virtual Device, and its own `/health` + `/exercises` probes visible in the API access log |
+| The app's JavaScript executes and reaches the API | Verified | reverse port forward + `GET /health` and `GET /exercises` from the device, visible in the API access log |
+| Coaching cues are built only from measured facts | Verified | 22 coach tests; `not_measurable` checks are dropped from the prompt entirely |
+| **A real Amazon Bedrock call** | **UNVERIFIED** | no AWS credentials on this machine; the Bedrock path is stub-tested and the rules fallback is what the emulator has actually shown. See `docs/bedrock.md` |
 | **Rep counts a real person matches a human's count** | **UNVERIFIED** | no labelled clip corpus exists yet; `benchmarks/bench_clips.py` exits rather than invent one |
 
 `docs/status.md` lists each claim with the command that proves it, and
@@ -100,11 +103,13 @@ packages/rep-engine/  reproom -- counts reps and grades form from pose
                                  landmarks. Standard library only. The piece
                                  meant to be reused. Apache-2.0.
 services/session-api/ FastAPI service: frames in, session state out.
+services/coach/     Amazon Bedrock cue generation with a labelled rule fallback.
 services/capture/     Companion-device camera page, served from the API origin.
 apps/fire-tv/         Vega OS React Native app: 10-foot HUD, D-pad focus.
 benchmarks/           Labelled-clip harness. Where the accuracy claim is earned
                       or withheld.
-docs/                 Measurements, friction log, feature requests, status.
+docs/                 Measurements, runbook, friction log, feature requests,
+                      Bedrock setup, and the verified/unverified split.
 scripts/              setup, dev, TLS.
 ```
 

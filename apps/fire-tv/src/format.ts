@@ -33,6 +33,7 @@ export interface ViewModel {
   hero: {value: number; discarded: number; abandoned: number};
   score: Line;
   presence: Line;
+  coach: CoachLine | null;
   rates: {cadence: string; tempo: string; fps: string; gate: {blocked: boolean; caption?: string}};
   checks: CheckRow[];
   warning: Line | null;
@@ -93,7 +94,7 @@ export function heroRepCount(state: SessionState | null): ViewModel['hero'] {
 }
 
 /** Status line: what the engine is doing and what it needs from the person. */
-export function presenceLine(presence: Presence | null, reason = ''): Line {
+export function presenceLine(presence: Presence | 'waiting' | null, reason = ''): Line {
   switch (presence) {
     case 'locked':
       return {text: 'tracking', tone: 'good', detail: reason};
@@ -179,6 +180,36 @@ export function lastRep(state: SessionState | null): SessionState['rep_log'][num
   return state.rep_log[state.rep_log.length - 1];
 }
 
+export interface CoachLine {
+  text: string;
+  label: string;
+  source: string;
+  tone: Tone;
+}
+
+/**
+ * The coaching line, with the thing that produced it named out loud.
+ *
+ * A generated sentence and a sentence assembled from an if-statement are not the
+ * same product claim, and the viewer is entitled to know which one is on the
+ * wall. Rules are deliberately the muted tone: it should be obvious from the sofa
+ * when the model is not in the loop.
+ */
+export function coachLine(
+  cue?: {text?: string; source?: string; model?: string | null} | null,
+): CoachLine | null {
+  if (!cue || !cue.text) return null;
+  if (cue.source === 'bedrock') {
+    return {
+      text: cue.text,
+      label: `COACH · BEDROCK${cue.model ? ` · ${cue.model}` : ''}`,
+      source: 'bedrock',
+      tone: 'good',
+    };
+  }
+  return {text: cue.text, label: 'COACH · BUILT-IN RULES', source: 'rules', tone: 'muted'};
+}
+
 /**
  * Everything the HUD renders, from one session payload.
  *
@@ -187,7 +218,13 @@ export function lastRep(state: SessionState | null): SessionState['rep_log'][num
  */
 export function buildViewModel(
   state: SessionState | null,
-  live: {presence?: Presence; reason?: string; phase?: string; angle?: number | null} = {},
+  live: {
+    presence?: Presence | 'waiting';
+    reason?: string;
+    phase?: string;
+    angle?: number | null;
+    cue?: {text?: string; source?: string; model?: string | null} | null;
+  } = {},
 ): ViewModel {
   const last = lastRep(state);
   const presence =
@@ -196,6 +233,7 @@ export function buildViewModel(
     hero: heroRepCount(state),
     score: formScore(state),
     presence: presenceLine(presence, live.reason),
+    coach: coachLine(live.cue),
     rates: rateLines(state),
     checks: checkRows(state),
     warning: viewWarning(state),

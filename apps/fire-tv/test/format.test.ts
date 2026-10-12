@@ -2,6 +2,7 @@ import {
   DASH,
   buildViewModel,
   checkRows,
+  coachLine,
   formScore,
   measure,
   presenceLine,
@@ -207,6 +208,32 @@ describe('checkRows', () => {
       }),
     );
     expect(rows[0].tone).toBe('bad');
+  });
+});
+
+describe('coachLine', () => {
+  it('names the model when Bedrock produced the sentence', () => {
+    const line = coachLine({text: 'Sit deeper.', source: 'bedrock', model: 'us.anthropic.claude-sonnet-4'});
+    expect(line?.label).toBe('COACH · BEDROCK · us.anthropic.claude-sonnet-4');
+    expect(line?.tone).toBe('good');
+  });
+
+  it('labels a rule-based sentence as a rule, visibly quieter', () => {
+    const line = coachLine({text: 'Depth is the one to fix.', source: 'rules'});
+    expect(line?.label).toBe('COACH · BUILT-IN RULES');
+    expect(line?.tone).toBe('muted');
+    expect(line?.source).toBe('rules');
+  });
+
+  it('renders nothing rather than an empty coaching block', () => {
+    expect(coachLine(null)).toBeNull();
+    expect(coachLine({text: '', source: 'bedrock'})).toBeNull();
+  });
+
+  it('is carried through the view model', () => {
+    const model = buildViewModel(session(), {cue: {text: 'Hold the tempo.', source: 'rules'}});
+    expect(model.coach?.text).toBe('Hold the tempo.');
+    expect(buildViewModel(session()).coach).toBeNull();
   });
 });
 

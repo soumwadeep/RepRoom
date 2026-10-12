@@ -102,6 +102,17 @@ export interface FrameUpdate {
   frames: {received: number; with_pose: number};
 }
 
+/** A coaching line plus where it came from. `source` is displayed, not hidden. */
+export interface Cue {
+  text: string;
+  source: 'bedrock' | 'rules';
+  label: string;
+  model: string | null;
+  latency_ms: number | null;
+  reason: string;
+  rep_key: string;
+}
+
 export interface CatalogueEntry {
   key: string;
   name: string;

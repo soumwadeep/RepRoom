@@ -75,6 +75,44 @@ def test_capture_page_is_served_from_the_api_origin(client):
     assert response.headers["content-type"].startswith("text/html")
 
 
+@pytest.fixture()
+def no_aws(monkeypatch):
+    """Pin the coach into its credential-less state for deterministic tests."""
+    for name in ("AWS_REGION", "AWS_DEFAULT_REGION", "REPROOM_AWS_REGION", "REPROOM_BEDROCK_MODEL"):
+        monkeypatch.delenv(name, raising=False)
+    reset = lambda: app.state.__dict__.pop("coach", None)
+    reset()
+    yield
+    reset()
+
+
+def test_health_reports_the_coach_without_calling_aws(client, no_aws):
+    coach = client.get("/health").json()["coach"]
+    assert coach["provider"] == "amazon-bedrock"
+    assert coach["ready"] is False
+    assert coach["probed"] is False, "/health is polled by the TV; it must not reach AWS"
+
+
+def test_coach_status_probe_explains_why_it_is_not_ready(client, no_aws):
+    body = client.get("/coach/status", params={"probe": False}).json()
+    assert body["reason"] == "not probed"
+    probed = client.get("/coach/status").json()
+    assert probed["ready"] is False
+    assert "region" in probed["reason"]
+
+
+def test_a_cue_without_credentials_is_labelled_rules_not_ai(client, no_aws):
+    session_id = start(client)
+    for pose in squat_arc(reps=1):
+        post_frame(client, session_id, pose)
+    cue = client.get(f"/session/{session_id}/cue").json()
+    assert cue["source"] == "rules"
+    assert cue["label"] == "built-in rules"
+    assert cue["model"] is None
+    assert "region" in cue["reason"]
+    assert cue["text"]
+
+
 def test_exercises_endpoint_lists_a_view_and_guidance_per_exercise(client):
     rows = client.get("/exercises").json()
     assert {row["key"] for row in rows} >= {"squat", "pushup", "overhead_press"}

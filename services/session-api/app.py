@@ -33,9 +33,12 @@ from pydantic import BaseModel, Field
 ENGINE_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "packages", "rep-engine")
 )
-if ENGINE_ROOT not in sys.path:
-    sys.path.insert(0, ENGINE_ROOT)
+COACH_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "coach"))
+for _path in (ENGINE_ROOT, COACH_ROOT):
+    if _path not in sys.path:
+        sys.path.insert(0, _path)
 
+from coach import Coach  # noqa: E402
 from reproom import CATALOGUE, RepEngine, catalogue_summary  # noqa: E402
 from reproom.exercises import VIEW_FRONT, VIEW_SIDE  # noqa: E402
 from reproom.geometry import PoseFrame  # noqa: E402
@@ -190,7 +193,8 @@ def health(detector: Detector = Depends(get_detector)) -> Dict[str, Any]:
     """Liveness plus which detector is really wired in.
 
     ``detected_by: stub-no-camera-input`` is a warning, not a status: it means
-    the numbers on the TV are not coming from a camera.
+    the numbers on the TV are not coming from a camera. The coach block is cheap
+    and never calls AWS; ``/coach/status`` is the endpoint that probes.
     """
     return {
         "status": "ok",
@@ -198,7 +202,27 @@ def health(detector: Detector = Depends(get_detector)) -> Dict[str, Any]:
         "exercises": len(CATALOGUE),
         "sessions_open": len(_sessions),
         "engine_root": ENGINE_ROOT,
+        "coach": get_coach().status(probe=False),
     }
+
+
+@app.get("/coach/status")
+def coach_status(probe: bool = True) -> Dict[str, Any]:
+    """What this AWS account will actually serve, or why it will not.
+
+    With ``probe=false`` this only reports configuration. Probing calls the
+    Bedrock control plane, so the answer includes the inference profiles the
+    account has enabled -- access has to be requested in the console first, and
+    a model ID that is not on this list will fail at runtime with a 400.
+    """
+    return get_coach().status(probe=probe)
+
+
+def get_coach() -> Coach:
+    """Coach singleton. Region and model come from the environment."""
+    if not hasattr(app.state, "coach"):
+        app.state.coach = Coach()
+    return app.state.coach
 
 
 @app.get("/exercises")
@@ -376,6 +400,23 @@ def get_session(session_id: str) -> Dict[str, Any]:
             "reason": latest.get("reason", ""),
         }
         return state
+
+
+@app.get("/session/{session_id}/cue")
+def session_cue(session_id: str) -> Dict[str, Any]:
+    """One coaching line for the current state, from Bedrock or from rules.
+
+    The response always says which, because a fallback presented as generative
+    coaching is a lie the screen should not be allowed to tell. Cue text is
+    cached per (exercise, rep count, failed checks), so a television polling this
+    every second does not spend a Bedrock call every second.
+    """
+    session = require_session(session_id)
+    with session.lock:
+        state = session.engine.state()
+    # Deliberately outside the lock: a model call can take a second, and frames
+    # must keep arriving while it does.
+    return get_coach().cue(state).to_dict()
 
 
 @app.post("/session/{session_id}/stop")

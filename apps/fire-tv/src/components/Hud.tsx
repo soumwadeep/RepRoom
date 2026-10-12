@@ -60,6 +60,13 @@ export const Hud = ({model, status, ageMs, sessionCode, apiBase, onFinish}: HudP
             <Metric label="ABANDONED" value={String(hero.abandoned)} tone="muted" hint="left frame mid-rep" />
             <Metric label="FORM" value={model.score.text} tone={model.score.tone} hint={model.score.caption ?? ''} />
           </View>
+
+          {model.coach ? (
+            <View style={styles.coach} testID="coach">
+              <Text style={styles.coachLabel}>{model.coach.label}</Text>
+              <Text style={[styles.coachText, {color: tones[model.coach.tone]}]}>{model.coach.text}</Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.sideColumn}>
@@ -250,6 +257,14 @@ const styles = StyleSheet.create({
   metricValue: {...t.value, marginTop: 6},
   metricHint: {...t.label, color: colors.inkFaint, marginTop: 4, maxWidth: 180},
   sideColumn: {flex: 1, gap: 20},
+  coach: {
+    marginTop: 30,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.panelEdge,
+    paddingLeft: 18,
+  },
+  coachLabel: {...t.label, color: colors.inkFaint},
+  coachText: {...t.body, color: colors.ink, marginTop: 6, maxWidth: 720},
   panel: {
     backgroundColor: colors.panel,
     borderWidth: 1,

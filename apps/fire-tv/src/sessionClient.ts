@@ -16,7 +16,7 @@
  */
 
 import {buildViewModel, type ViewModel} from './format';
-import type {FrameUpdate, Presence, SessionState} from './types';
+import type {Cue, FrameUpdate, Presence, SessionState} from './types';
 
 export const STATUS = {
   IDLE: 'idle',
@@ -75,6 +75,8 @@ export function createSessionClient(options: SessionClientOptions) {
   let interval = pollMs;
   let error: string | null = null;
   let stopped = false;
+  let cueForReps: number | null = null;
+  let lastCue: Cue | null = null;
   let handle: ReturnType<typeof setInterval> | null = null;
   const listeners = new Set<(snapshot: Snapshot) => void>();
 
@@ -124,6 +126,8 @@ export function createSessionClient(options: SessionClientOptions) {
       status = STATUS.LIVE;
       lastGoodAt = now();
       interval = pollMs;
+      cueForReps = null;
+      lastCue = null;
       emit();
       retune();
       return created;
@@ -140,11 +144,13 @@ export function createSessionClient(options: SessionClientOptions) {
     try {
       const state = await request<SessionState>(`/session/${sessionId}`);
       const live = state.live ?? {};
+      const cue = await refreshCue(state);
       viewModel = buildViewModel(state, {
         presence: live.presence as Presence | undefined,
         phase: live.phase,
         reason: live.reason,
         angle: live.angle ?? null,
+        cue,
       });
       lastGoodAt = now();
       if (status !== STATUS.LIVE) status = STATUS.LIVE;
@@ -160,6 +166,27 @@ export function createSessionClient(options: SessionClientOptions) {
       retune();
     }
     emit();
+  }
+
+  /**
+   * Ask for a cue only when there is something new to say about.
+   *
+   * The television polls several times a second; a Bedrock call per poll would
+   * be both slow and a bill the user never agreed to. The server caches per
+   * situation, so this client only needs to notice when the rep count moved.
+   * A failed cue request hides the line rather than repeating an old one, since
+   * coaching from the previous rep presented as current advice is exactly the
+   * kind of stale-confidence this app is built to avoid.
+   */
+  async function refreshCue(state: SessionState): Promise<Cue | null> {
+    if (state.reps === cueForReps) return lastCue;
+    cueForReps = state.reps;
+    try {
+      lastCue = await request<Cue>(`/session/${sessionId}/cue`);
+    } catch {
+      lastCue = null;
+    }
+    return lastCue;
   }
 
   async function stop() {

@@ -11,7 +11,7 @@ if [[ ! -d "$VENV" ]]; then
 fi
 "$VENV/bin/pip" install -q --upgrade pip
 "$VENV/bin/pip" install -q -e "$ROOT/packages/rep-engine[detect,dev]"
-"$VENV/bin/pip" install -q fastapi "uvicorn[standard]" httpx pytest numpy pillow
+"$VENV/bin/pip" install -q fastapi "uvicorn[standard]" httpx pytest numpy pillow boto3
 
 mkdir -p "$ROOT/models"
 for name in lite full; do

@@ -89,6 +89,15 @@ function scriptedApi(handlers: Record<string, () => unknown> = {}) {
     'GET /exercises': () => CATALOGUE,
     'POST /session': () => ({session_id: 'k7d21f'}),
     'GET /session/k7d21f': () => state(6),
+    'GET /session/k7d21f/cue': () => ({
+      text: 'Sit deeper before you drive up.',
+      source: 'rules',
+      label: 'built-in rules',
+      model: null,
+      latency_ms: null,
+      reason: 'no AWS region configured',
+      rep_key: 'v1:squat:6:Depth',
+    }),
     'POST /session/k7d21f/stop': () => state(9, {finished: true}),
     ...handlers,
   };
@@ -168,6 +177,18 @@ it('renders measured reps, discards and an unmeasurable check as a dash', async 
   expect(getByText('\u2014')).toBeTruthy();
   expect(getByText('not measured')).toBeTruthy();
   expect(getByText(/all 4 checks met/)).toBeTruthy();
+});
+
+it('shows the coaching line with whatever produced it named', async () => {
+  const api = scriptedApi();
+  const {getByText} = renderApp(api);
+  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy());
+  await act(async () => {
+    fireEvent.press(getByText('BODYWEIGHT SQUAT'));
+  });
+
+  await waitFor(() => expect(getByText('COACH · BUILT-IN RULES')).toBeTruthy());
+  expect(getByText('Sit deeper before you drive up.')).toBeTruthy();
 });
 
 it('finishes a set and reads the totals back from the server', async () => {
