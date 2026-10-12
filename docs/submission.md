@@ -55,7 +55,7 @@ description fields, so do them before pasting §2 and §4 if possible.
 > merging two unsynchronised clocks would make every tempo number fiction.
 >
 > Built for the Fire TV track in React Native on Vega OS, running on the Vega
-> Virtual Device. 146 tests, Apache-2.0, and the rep engine is packaged as a
+> Virtual Device. 155 tests, Apache-2.0, and the rep engine is packaged as a
 > standalone library with no runtime dependencies.
 
 **Word count:** ~350. Devpost's description box is generous; trim from the last
@@ -203,7 +203,7 @@ terminal beside it so the commands are visible.
 | 1:15–1:50 | Live set, 6–8 squats, HUD updating | Narrate the count. Then deliberately do two shallow reps: "Those two didn't reach depth — they're counted as discards, not as reps." Walk out of frame mid-rep: "And that arc was abandoned, which is a different fact." |
 | 1:50–2:10 | Close on the checks panel with a front-on camera | "Filmed from the front, depth is not measurable at all — so it says *not measured* and leaves it out of the score instead of showing a green tick it didn't earn." |
 | 2:10–2:25 | Cue line on screen | "The coaching sentence comes from Amazon Bedrock, built only from these measurements — and when the model isn't reachable it says so and uses a rule instead." Show the label. |
-| 2:25–2:40 | Terminal: `pytest` + `jest` totals; repo with license | "146 tests, Apache-2.0, and the rep engine is its own package. What I haven't measured yet is accuracy against a human count — there's no labelled corpus, so the repo says UNVERIFIED rather than guessing." |
+| 2:25–2:40 | Terminal: `pytest` + `jest` totals; repo with license | "155 tests, Apache-2.0, and the rep engine is its own package. What I haven't measured yet is accuracy against a human count — there's no labelled corpus, so the repo says UNVERIFIED rather than guessing." |
 
 **Do not** show a number for accuracy, latency-to-display, or model latency unless
 it was actually measured by then. The closing line above is a feature: a hackathon

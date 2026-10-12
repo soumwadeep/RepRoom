@@ -1,0 +1,897 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`lays out a full live session as expected 1`] = `
+<View
+  style={
+    {
+      "backgroundColor": "#04070D",
+      "flex": 1,
+      "paddingBottom": 28,
+      "paddingHorizontal": 56,
+      "paddingTop": 40,
+    }
+  }
+  testID="hud"
+>
+  <View
+    style={
+      {
+        "alignItems": "flex-start",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#E8F5FF",
+            "fontSize": 34,
+            "fontWeight": "600",
+            "lineHeight": 42,
+          }
+        }
+      >
+        Bodyweight squat
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#42586B",
+            "fontSize": 13,
+            "letterSpacing": 3,
+            "lineHeight": 18,
+            "marginTop": 6,
+          }
+        }
+      >
+        Quads, glutes, core
+      </Text>
+    </View>
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderRadius": 999,
+            "borderWidth": 1,
+            "flexDirection": "row",
+            "paddingHorizontal": 18,
+            "paddingVertical": 10,
+          },
+          {
+            "borderColor": "#3BE08E",
+          },
+        ]
+      }
+    >
+      <View
+        style={
+          [
+            {
+              "borderRadius": 5,
+              "height": 10,
+              "marginRight": 10,
+              "width": 10,
+            },
+            {
+              "backgroundColor": "#3BE08E",
+            },
+          ]
+        }
+      />
+      <Text
+        style={
+          [
+            {
+              "fontSize": 13,
+              "fontWeight": "700",
+              "letterSpacing": 3,
+              "lineHeight": 18,
+            },
+            {
+              "color": "#3BE08E",
+            },
+          ]
+        }
+      >
+        TRACKING
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "flex": 1,
+        "flexDirection": "row",
+        "gap": 40,
+        "marginTop": 28,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1.15,
+          "justifyContent": "center",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#E8F5FF",
+            "fontSize": 190,
+            "fontVariant": [
+              "tabular-nums",
+            ],
+            "fontWeight": "700",
+            "lineHeight": 200,
+          }
+        }
+        testID="rep-count"
+      >
+        12
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#35E0C8",
+            "fontSize": 13,
+            "letterSpacing": 3,
+            "lineHeight": 18,
+            "marginTop": -8,
+          }
+        }
+      >
+        REPS COUNTED
+      </Text>
+      <View
+        style={
+          {
+            "flexDirection": "row",
+            "gap": 28,
+            "marginTop": 34,
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "minWidth": 150,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+              }
+            }
+          >
+            DISCARDED
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "fontSize": 30,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                  "marginTop": 6,
+                },
+                {
+                  "color": "#FFB347",
+                },
+              ]
+            }
+          >
+            2
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "marginTop": 4,
+                "maxWidth": 180,
+              }
+            }
+          >
+            arc too short or too fast
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "minWidth": 150,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+              }
+            }
+          >
+            ABANDONED
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "fontSize": 30,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                  "marginTop": 6,
+                },
+                {
+                  "color": "#5A7185",
+                },
+              ]
+            }
+          >
+            1
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "marginTop": 4,
+                "maxWidth": 180,
+              }
+            }
+          >
+            left frame mid-rep
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "minWidth": 150,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+              }
+            }
+          >
+            FORM
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "fontSize": 30,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                  "marginTop": 6,
+                },
+                {
+                  "color": "#FFB347",
+                },
+              ]
+            }
+          >
+            75%
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "marginTop": 4,
+                "maxWidth": 180,
+              }
+            }
+          >
+            depth
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "borderLeftColor": "#16324A",
+            "borderLeftWidth": 3,
+            "marginTop": 30,
+            "paddingLeft": 18,
+          }
+        }
+        testID="coach"
+      >
+        <Text
+          style={
+            {
+              "color": "#42586B",
+              "fontSize": 13,
+              "letterSpacing": 3,
+              "lineHeight": 18,
+            }
+          }
+        >
+          COACH · BUILT-IN RULES
+        </Text>
+        <Text
+          style={
+            [
+              {
+                "color": "#E8F5FF",
+                "fontSize": 22,
+                "lineHeight": 30,
+                "marginTop": 6,
+                "maxWidth": 720,
+              },
+              {
+                "color": "#5A7185",
+              },
+            ]
+          }
+        >
+          Depth is the one to fix: slow the lowering phase.
+        </Text>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "flex": 1,
+          "gap": 20,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#0A1420",
+            "borderColor": "#16324A",
+            "borderRadius": 10,
+            "borderWidth": 1,
+            "padding": 20,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#1E88FF",
+              "fontSize": 13,
+              "letterSpacing": 3,
+              "lineHeight": 18,
+              "marginBottom": 12,
+            }
+          }
+        >
+          RATES
+        </Text>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingVertical": 8,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#7F9BB3",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "width": 170,
+              }
+            }
+          >
+            CADENCE
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#E8F5FF",
+                "fontSize": 30,
+                "fontWeight": "600",
+                "lineHeight": 36,
+                "minWidth": 120,
+              }
+            }
+          >
+            34 /min
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingVertical": 8,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#7F9BB3",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "width": 170,
+              }
+            }
+          >
+            TEMPO
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#E8F5FF",
+                "fontSize": 30,
+                "fontWeight": "600",
+                "lineHeight": 36,
+                "minWidth": 120,
+              }
+            }
+          >
+            1600 ms
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingVertical": 8,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#7F9BB3",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "width": 170,
+              }
+            }
+          >
+            FEED
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#E8F5FF",
+                "fontSize": 30,
+                "fontWeight": "600",
+                "lineHeight": 36,
+                "minWidth": 120,
+              }
+            }
+          >
+            7.9 fps
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "backgroundColor": "#0A1420",
+            "borderColor": "#16324A",
+            "borderRadius": 10,
+            "borderWidth": 1,
+            "padding": 20,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#1E88FF",
+              "fontSize": 13,
+              "letterSpacing": 3,
+              "lineHeight": 18,
+              "marginBottom": 12,
+            }
+          }
+        >
+          LAST REP
+        </Text>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingVertical": 8,
+            }
+          }
+          testID="check-Depth"
+        >
+          <Text
+            style={
+              {
+                "color": "#7F9BB3",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "width": 170,
+              }
+            }
+          >
+            DEPTH
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#E8F5FF",
+                  "fontSize": 30,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                  "minWidth": 120,
+                },
+                {
+                  "color": "#FF6B6B",
+                },
+              ]
+            }
+          >
+            0.21
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "flex": 1,
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "marginLeft": 12,
+              }
+            }
+          >
+            above the depth target
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingVertical": 8,
+            }
+          }
+          testID="check-Back angle"
+        >
+          <Text
+            style={
+              {
+                "color": "#7F9BB3",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "width": 170,
+              }
+            }
+          >
+            BACK ANGLE
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#E8F5FF",
+                  "fontSize": 30,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                  "minWidth": 120,
+                },
+                {
+                  "color": "#3BE08E",
+                },
+              ]
+            }
+          >
+            31°
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "flex": 1,
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "marginLeft": 12,
+              }
+            }
+          >
+            torso within range
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingVertical": 8,
+            }
+          }
+          testID="check-Knee tracking"
+        >
+          <Text
+            style={
+              {
+                "color": "#7F9BB3",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "width": 170,
+              }
+            }
+          >
+            KNEE TRACKING
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#E8F5FF",
+                  "fontSize": 30,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                  "minWidth": 120,
+                },
+                {
+                  "color": "#5A7185",
+                },
+              ]
+            }
+          >
+            —
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "flex": 1,
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "marginLeft": 12,
+              }
+            }
+          >
+            not measured
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingVertical": 8,
+            }
+          }
+          testID="check-Tempo"
+        >
+          <Text
+            style={
+              {
+                "color": "#7F9BB3",
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "width": 170,
+              }
+            }
+          >
+            TEMPO
+          </Text>
+          <Text
+            style={
+              [
+                {
+                  "color": "#E8F5FF",
+                  "fontSize": 30,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                  "minWidth": 120,
+                },
+                {
+                  "color": "#3BE08E",
+                },
+              ]
+            }
+          >
+            1600
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#42586B",
+                "flex": 1,
+                "fontSize": 13,
+                "letterSpacing": 3,
+                "lineHeight": 18,
+                "marginLeft": 12,
+              }
+            }
+          >
+            controlled through the arc
+          </Text>
+        </View>
+      </View>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "marginTop": 24,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "gap": 2,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#1E88FF",
+            "fontSize": 13,
+            "letterSpacing": 3,
+            "lineHeight": 18,
+          }
+        }
+      >
+        CAMERA JOINS WITH CODE
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#35E0C8",
+            "fontSize": 30,
+            "fontWeight": "600",
+            "letterSpacing": 6,
+            "lineHeight": 36,
+          }
+        }
+        testID="session-code"
+      >
+        k7d21f
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#42586B",
+            "fontSize": 13,
+            "letterSpacing": 3,
+            "lineHeight": 18,
+          }
+        }
+      >
+        http://192.168.29.2:8420
+        /capture
+      </Text>
+    </View>
+    <Text
+      style={
+        {
+          "color": "#42586B",
+          "fontSize": 13,
+          "letterSpacing": 3,
+          "lineHeight": 18,
+        }
+      }
+    >
+      depth target 
+      0.15
+       · 
+      absolute
+       · camera view 
+      side
+       · frames 
+      168
+    </Text>
+    <View
+      accessibilityLabel="Finish this set"
+      accessibilityRole="button"
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      isPressable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onLongPress={[Function]}
+      onMouseEnter={[Function]}
+      onMouseLeave={[Function]}
+      onPressIn={[Function]}
+      onPressOut={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        [
+          {
+            "borderColor": "#16324A",
+            "borderRadius": 6,
+            "borderWidth": 1,
+            "paddingHorizontal": 26,
+            "paddingVertical": 12,
+          },
+          null,
+        ]
+      }
+      testID="finish-set"
+    >
+      <Text
+        style={
+          {
+            "color": "#E8F5FF",
+            "fontSize": 13,
+            "letterSpacing": 3,
+            "lineHeight": 18,
+          }
+        }
+      >
+        FINISH SET
+      </Text>
+    </View>
+  </View>
+</View>
+`;

@@ -34,6 +34,18 @@ not just the counter.
 
 ## Running it
 
+Write the sidecars with the labeller so the clip metadata is measured rather
+than remembered:
+
+```bash
+.venv/bin/python benchmarks/label.py benchmarks/clips/squats_set1.mp4
+.venv/bin/python benchmarks/label.py benchmarks/clips --verify
+```
+
+`--verify` re-measures each video and fails if a label claims a frame count or
+duration the file does not have, which is how a sidecar typed from memory gets
+caught.
+
 ```bash
 .venv/bin/python benchmarks/bench_clips.py benchmarks/clips --fps 10
 ```

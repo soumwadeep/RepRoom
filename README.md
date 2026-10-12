@@ -31,7 +31,7 @@ a folder like `Github Repos` fails at the bundle step with
 ```bash
 scripts/setup.sh                               # venv, deps, pose models (~14 MB)
 .venv/bin/python -m pytest packages services   # 95 tests
-cd apps/fire-tv && npm install && npx jest     # 51 tests
+cd apps/fire-tv && npm install && npx jest     # 60 tests
 
 scripts/dev.sh                        # API on http://localhost:8420
 open http://localhost:8420/capture    # camera page; press Start, do squats
@@ -69,7 +69,7 @@ assuming it did.
 | Form checks flag the fault they target | Verified | same suite; each check has a passing and a failing fixture |
 | MediaPipe recovers a pose from a JPEG | Verified | 4 integration tests, 20–100 ms/frame measured on Apple M1 |
 | The API serves that over HTTP | Verified | 21 service tests plus live uvicorn smoke runs |
-| The HUD refuses to render unmeasured numbers | Verified | 51 app tests, including screen-flow tests against a scripted API |
+| The HUD refuses to render unmeasured numbers | Verified | 60 app tests: screen-flow against a scripted API, plus a committed layout snapshot of the live screen |
 | The app builds and runs on the Fire TV simulator | Verified | signed `.vpkg` for three architectures; `com.reproom.tv.main` running in the Vega Virtual Device, and its own `/health` + `/exercises` probes visible in the API access log |
 | The app's JavaScript executes and reaches the API | Verified | reverse port forward + `GET /health` and `GET /exercises` from the device, visible in the API access log |
 | Coaching cues are built only from measured facts | Verified | 22 coach tests; `not_measurable` checks are dropped from the prompt entirely |

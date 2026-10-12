@@ -78,7 +78,7 @@ What that means precisely:
 | Prompt construction, and that unmeasurable checks are excluded | Verified -- 22 tests in `services/coach/test_coach.py` |
 | Fallback to rules when there is no region, no access, no credentials, a throttle, or an empty response | Verified, with the reason preserved in the response |
 | Cue cached per (exercise, rep count, failed checks) so polling does not spend a call per poll | Verified |
-| The TV labels the source of every cue it shows | Verified -- 51 app tests, including the on-screen `COACH · BUILT-IN RULES` label |
+| The TV labels the source of every cue it shows | Verified -- 60 app tests, including the on-screen `COACH · BUILT-IN RULES` label |
 | A real `converse()` call returning a real sentence | **UNVERIFIED** until run against the account |
 | Which model this account will serve | **UNVERIFIED** -- `discover()` answers this at runtime |
 

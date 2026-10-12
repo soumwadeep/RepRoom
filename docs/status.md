@@ -15,7 +15,7 @@ the commands in [runbook.md](runbook.md).
 | The Vega app runs on the simulator | `vega virtual-device start` → "Virtual device ready"; `vega run-app` → `com.reproom.tv.main is running`; `vega device running-apps` lists it |
 | The app's JavaScript executes and reaches the API | With reverse port forwarding on, the API access log shows `GET /health 200` and `GET /exercises 200` arriving from the device after the app was relaunched. The emulator window shows the exercise list and "API reachable" |
 | The device can reach a LAN host directly too | `wget http://192.168.29.2:8420/health` from `vega device run-cmd` returned the live payload |
-| App logic and screen flow | 51 jest tests: pairing code on screen, live reps rendered, unmeasurable check drawn as a dash, stale veil, cue provenance label, summary read back from the server |
+| App logic and screen flow | 60 jest tests: pairing code on screen, live reps rendered, unmeasurable check drawn as a dash, stale veil, cue provenance label, summary read back from the server |
 | Cue building is confined to measured facts | 22 tests in `services/coach/test_coach.py`; `not_measurable` checks are excluded from the prompt, and every Bedrock failure path returns a labelled `rules` cue with the reason kept |
 | The rebuilt app still runs on the device | Re-installed after the coach landed; the API access log shows a fresh `GET /health` + `GET /exercises` pair from the new package |
 
