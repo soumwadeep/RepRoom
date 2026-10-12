@@ -231,7 +231,7 @@ that step only applies to private repos.
 Sanity-check before pushing:
 
 ```bash
-git ls-files | wc -l          # ~60 files
+git ls-files | wc -l          # 58 files
 du -sh .git                   # under 1 MB; models and node_modules are ignored
 git ls-files | grep -E "\.task|node_modules|\.vpkg" || echo "clean"
 ```
