@@ -68,8 +68,13 @@ the television polls it on every address change.
 
 ## Verification status
 
-**Not yet run against a live account.** This build machine has no AWS
-credentials, so the Bedrock path has been exercised only against stub clients.
+**The success path has not run against a live account.** This build machine has
+no AWS credentials, so a real `converse()` completion is unverified. The failure
+path is not theoretical: probing with deliberately invalid credentials made a
+live round trip to the Bedrock control plane, and the resulting
+`UnrecognizedClientException` was surfaced as the cue's `reason` with the
+rule-based line labelled as such -- which is the behaviour the demo depends on if
+the account is misconfigured on the day.
 
 What that means precisely:
 
