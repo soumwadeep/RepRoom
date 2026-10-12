@@ -159,6 +159,33 @@ def test_an_empty_body_is_a_400(client):
     assert response.status_code == 400
 
 
+def test_state_carries_the_live_phase_the_tv_needs_between_reps(client):
+    """The polling endpoint is the only thing the television sees.
+
+    Phase and presence are per-frame answers, so without them on this endpoint
+    the HUD would be blind between reps -- and before the first frame arrives it
+    must say "waiting", not invent a phase.
+    """
+    session_id = start(client)
+    waiting = client.get(f"/session/{session_id}").json()["live"]
+    assert waiting == {"presence": "waiting", "phase": "setup", "angle": None, "reason": ""}
+
+    pose = squat_arc(reps=1)[3]
+    post_frame(client, session_id, pose)
+    live = client.get(f"/session/{session_id}").json()["live"]
+    assert live["presence"] in ("locked", "searching")
+    assert live["phase"] in ("setup", "descending", "bottom", "ascending", "lockout")
+
+
+def test_state_reports_frames_received_as_counts_not_ratios(client):
+    session_id = start(client)
+    for pose in squat_arc(reps=1)[:4]:
+        post_frame(client, session_id, pose)
+    state = client.get(f"/session/{session_id}").json()
+    assert state["frames"] == {"received": 4, "with_pose": 4}
+    assert state["low_confidence_frames"] == 0
+
+
 def test_state_reports_the_view_mismatch_instead_of_silently_grading(client):
     """A press set up with a side camera is allowed, but it is flagged."""
     session_id = start(client, "overhead_press", "side")

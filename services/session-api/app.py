@@ -364,6 +364,17 @@ def get_session(session_id: str) -> Dict[str, Any]:
         state["detect_ms"] = {"last": session.detect_ms_last, "mean": session.detect_ms_mean}
         state["clock_degraded"] = session.clock_degraded
         state["finished"] = session.finished
+        # The TV polls this endpoint, so the engine's most recent per-frame
+        # answer has to travel with it: phase and presence are what make the
+        # screen feel alive between reps, and "waiting" is what it should say
+        # before any frame has arrived rather than inventing a phase.
+        latest = session.last_update or {}
+        state["live"] = {
+            "presence": latest.get("presence", "waiting"),
+            "phase": latest.get("phase", "setup"),
+            "angle": latest.get("angle"),
+            "reason": latest.get("reason", ""),
+        }
         return state
 
 

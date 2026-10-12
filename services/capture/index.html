@@ -181,19 +181,30 @@
         els.start.disabled = true;
         try {
           await openCamera();
-          const response = await fetch(`${origin}/session`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ exercise: els.exercise.value, view: els.view.value }),
-          });
-          if (!response.ok) throw new Error((await response.json()).detail);
-          session = (await response.json()).session_id;
+          // The TV owns the session and shows a code; joining one is the normal
+          // path. Creating one here is the fallback for testing the API with no
+          // television attached, and the difference is printed so a demo cannot
+          // quietly end up counting into the wrong session.
+          const joined = new URLSearchParams(location.search).get("session");
+          if (joined) {
+            session = joined;
+            note(`joining TV session ${session}`);
+          } else {
+            const response = await fetch(`${origin}/session`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ exercise: els.exercise.value, view: els.view.value }),
+            });
+            if (!response.ok) throw new Error((await response.json()).detail);
+            session = (await response.json()).session_id;
+            note(`created its own session ${session} -- no TV session joined`);
+          }
           els.stop.disabled = false;
           els.start.dataset.live = "1";
           const interval = Math.round(1000 / (Number(els.fps.value) || 8));
           ticker = setInterval(sendFrame, interval);
           poller = setInterval(refreshState, 700);
-          note(`session ${session} sending ${els.fps.value} fps to ${origin}`);
+          note(`sending ${els.fps.value} fps to ${origin}`);
         } catch (err) {
           note("could not start: " + err.message, "error");
           if (String(err.message).includes("camera API") || err.name === "NotAllowedError") {
