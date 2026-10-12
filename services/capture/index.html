@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RepRoom capture</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #e6f4ff;
+        --dim: #7f9bb3;
+        --line: #1d3a52;
+        --hot: #35e0c8;
+        --bad: #ff6b6b;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: #05090f; color: var(--ink);
+        font: 14px/1.4 -apple-system, "Helvetica Neue", sans-serif;
+        display: flex; flex-direction: column; min-height: 100vh;
+      }
+      header { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+      h1 { margin: 0; font-size: 13px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--hot); }
+      main { flex: 1; display: grid; gap: 12px; padding: 16px; grid-template-rows: auto 1fr auto; }
+      video, canvas { width: 100%; max-height: 42vh; object-fit: cover; background: #000; border: 1px solid var(--line); }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      select, input, button {
+        background: #0b1622; color: var(--ink); border: 1px solid var(--line);
+        border-radius: 4px; padding: 8px 10px; font: inherit;
+      }
+      button { cursor: pointer; }
+      button[data-live="1"] { border-color: var(--hot); color: var(--hot); }
+      .readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+      .cell { border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+      .cell b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; color: var(--hot); }
+      .cell span { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
+      #log { font-family: ui-monospace, monospace; font-size: 11px; color: var(--dim); white-space: pre-wrap; max-height: 16vh; overflow: auto; }
+      .warn { color: #ffb347; }
+      .error { color: var(--bad); }
+    </style>
+  </head>
+  <body>
+    <header><h1>RepRoom capture</h1></header>
+    <main>
+      <div class="row">
+        <label>Exercise <select id="exercise"></select></label>
+        <label>Camera view
+          <select id="view">
+            <option value="side">side</option>
+            <option value="front">front</option>
+          </select>
+        </label>
+        <label>Send fps <input id="fps" type="number" value="8" min="1" max="30" style="width:64px" /></label>
+        <label>Frame width <input id="width" type="number" value="512" min="256" max="1280" step="128" style="width:76px" /></label>
+        <button id="start">Start</button>
+        <button id="stop" disabled>Stop</button>
+      </div>
+
+      <video id="preview" autoplay playsinline muted></video>
+      <canvas id="work" hidden></canvas>
+
+      <div class="readout">
+        <div class="cell"><b id="reps">0</b><span>reps</span></div>
+        <div class="cell"><b id="phase">–</b><span>phase</span></div>
+        <div class="cell"><b id="angle">–</b><span id="angleLabel">joint angle</span></div>
+        <div class="cell"><b id="sent">0</b><span>frames sent</span></div>
+        <div class="cell"><b id="quality">–</b><span>form</span></div>
+      </div>
+      <div id="log"></div>
+    </main>
+
+    <script>
+      // The companion sensor. It does exactly two things: put a camera in front
+      // of a person, and POST one JPEG per tick. All measurement happens on the
+      // server, so nothing here needs to agree with the TV about what a rep is.
+      const els = {
+        exercise: document.getElementById("exercise"),
+        view: document.getElementById("view"),
+        fps: document.getElementById("fps"),
+        width: document.getElementById("width"),
+        start: document.getElementById("start"),
+        stop: document.getElementById("stop"),
+        preview: document.getElementById("preview"),
+        work: document.getElementById("work"),
+        log: document.getElementById("log"),
+        reps: document.getElementById("reps"),
+        phase: document.getElementById("phase"),
+        angle: document.getElementById("angle"),
+        angleLabel: document.getElementById("angleLabel"),
+        sent: document.getElementById("sent"),
+        quality: document.getElementById("quality"),
+      };
+
+      let session = null;
+      let stream = null;
+      let ticker = null;
+      let poller = null;
+      let sent = 0;
+      let consecutiveFailures = 0;
+
+      const origin = location.origin.startsWith("http") ? location.origin : "http://127.0.0.1:8420";
+      const note = (message, cls) => {
+        const line = document.createElement("div");
+        if (cls) line.className = cls;
+        line.textContent = new Date().toLocaleTimeString() + "  " + message;
+        els.log.prepend(line);
+        while (els.log.children.length > 60) els.log.lastChild.remove();
+      };
+
+      async function loadExercises() {
+        const rows = await (await fetch(origin + "/exercises")).json();
+        els.exercise.innerHTML = rows
+          .map((r) => `<option value="${r.key}">${r.name} (${r.view} cam)</option>`)
+          .join("");
+        els.exercise.onchange = () => {
+          const row = rows.find((r) => r.key === els.exercise.value);
+          els.view.value = row ? row.view : "side";
+        };
+      }
+
+      async function openCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("this browser exposes no camera API");
+        }
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: { ideal: 1280 } },
+          audio: false,
+        });
+        els.preview.srcObject = stream;
+        await els.preview.play();
+      }
+
+      function snapshot() {
+        const targetWidth = Number(els.width.value) || 512;
+        const scale = targetWidth / els.preview.videoWidth;
+        els.work.width = targetWidth;
+        els.work.height = Math.round(els.preview.videoHeight * scale);
+        els.work.getContext("2d").drawImage(els.preview, 0, 0, els.work.width, els.work.height);
+        return new Promise((resolve) => els.work.toBlob(resolve, "image/jpeg", 0.6));
+      }
+
+      async function sendFrame() {
+        if (!session) return;
+        const blob = await snapshot();
+        // performance.now() is monotonic on this device and is what the server
+        // uses for rep duration. It is NOT comparable to the server's clock, so
+        // no latency figure is claimed across the two.
+        try {
+          await fetch(`${origin}/session/${session}/frame`, {
+            method: "POST",
+            body: blob,
+            headers: { "Content-Type": "image/jpeg", "X-Capture-Ms": String(performance.now()) },
+          });
+          consecutiveFailures = 0;
+          sent += 1;
+          els.sent.textContent = sent;
+        } catch (err) {
+          if (++consecutiveFailures === 5) note(`sending frames failed: ${err}`, "error");
+        }
+      }
+
+      async function refreshState() {
+        if (!session) return;
+        try {
+          const state = await (await fetch(`${origin}/session/${session}`)).json();
+          els.reps.textContent = state.reps;
+          els.angle.textContent =
+            state.rep_log && state.rep_log.length
+              ? Math.round(state.rep_log[state.rep_log.length - 1].primary_min) + "\u00b0"
+              : "\u2013";
+          els.quality.textContent =
+            state.mean_quality == null ? "\u2013" : Math.round(state.mean_quality * 100) + "%";
+          els.angleLabel.textContent = state.exercise ? state.exercise.name + " min" : "joint angle";
+          if (state.lowest_check) els.phase.textContent = state.lowest_check;
+        } catch (err) {
+          note("state poll failed: " + err, "warn");
+        }
+      }
+
+      els.start.onclick = async () => {
+        els.start.disabled = true;
+        try {
+          await openCamera();
+          const response = await fetch(`${origin}/session`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ exercise: els.exercise.value, view: els.view.value }),
+          });
+          if (!response.ok) throw new Error((await response.json()).detail);
+          session = (await response.json()).session_id;
+          els.stop.disabled = false;
+          els.start.dataset.live = "1";
+          const interval = Math.round(1000 / (Number(els.fps.value) || 8));
+          ticker = setInterval(sendFrame, interval);
+          poller = setInterval(refreshState, 700);
+          note(`session ${session} sending ${els.fps.value} fps to ${origin}`);
+        } catch (err) {
+          note("could not start: " + err.message, "error");
+          if (String(err.message).includes("camera API") || err.name === "NotAllowedError") {
+            note(
+              "a camera needs a secure origin. On a phone use https:// (see scripts/with-tls.sh); on this Mac localhost qualifies.",
+              "warn"
+            );
+          }
+          els.start.disabled = false;
+        }
+      };
+
+      els.stop.onclick = () => {
+        clearInterval(ticker);
+        clearInterval(poller);
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+        els.preview.srcObject = null;
+        els.stop.disabled = true;
+        els.start.disabled = false;
+        delete els.start.dataset.live;
+        if (session) fetch(`${origin}/session/${session}/stop`, { method: "POST" }).catch(() => {});
+        session = null;
+        note("stopped; the server keeps the totals until this session is discarded");
+      };
+
+      if (!window.isSecureContext) {
+        note("insecure origin: the camera will be refused here", "warn");
+      }
+      loadExercises().catch((err) => note("API unreachable at " + origin + ": " + err, "error"));
+    </script>
+  </body>
+</html>

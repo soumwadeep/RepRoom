@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Pose model bundles (~14 MB total). Pulled by scripts/setup.sh, never committed.
+models/*.task
+
+# Self-signed TLS for the phone camera path
+.tls/
+
+# Recorded clips stay local: they contain a person, and they are far too big
+# for GitHub's 100 MB file limit anyway.
+benchmarks/clips/
+*.mp4
+*.mov
+*.m4v
+
+# Node / Vega
+node_modules/
+apps/fire-tv/build/
+apps/fire-tv/.vega/
+*.log
+
+.DS_Store
