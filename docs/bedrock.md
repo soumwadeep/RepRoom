@@ -43,6 +43,11 @@ overrides the choice when you want a specific model.
 
 ## Setup
 
+The full walkthrough -- what the Mumbai region changes, the one-time
+Anthropic use-case form, and the two ways to hand this build access (a Bedrock
+API key versus an IAM user key) -- is in
+[bedrock-setup.md](bedrock-setup.md). Short version:
+
 ```bash
 # 1. Credentials for the account (any one of these works)
 aws configure                       # or export AWS_ACCESS_KEY_ID / _SECRET_KEY

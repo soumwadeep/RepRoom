@@ -182,7 +182,15 @@ def rep_key(state: Dict[str, Any]) -> str:
 
 
 def discover(region: Optional[str] = None, control_client: Any = None) -> Discovery:
-    """Ask this account which Anthropic profile it will actually serve."""
+    """Ask this account which Anthropic model it will actually serve.
+
+    Two shapes have to be handled, because Amazon changed the first one in the
+    lifetime of this project. Cross-region inference profiles are the answer in
+    regions where a provider model is served from elsewhere; in regions where the
+    model is offered directly, the account may have no profile at all but still be
+    entitled to the foundation model. Guessing either way produces a 400 that reads
+    like a bug in the caller, so both are asked.
+    """
     region = region or _env("AWS_REGION") or _env("AWS_DEFAULT_REGION") or _env("REPROOM_AWS_REGION")
     if not region:
         return Discovery(ok=False, reason="no AWS region configured (set AWS_REGION)")
@@ -194,34 +202,95 @@ def discover(region: Optional[str] = None, control_client: Any = None) -> Discov
         except Exception as exc:  # missing boto3, no credentials, bad config
             return Discovery(ok=False, reason=f"bedrock control plane unavailable: {exc}", region=region)
 
+    profiles_error: Optional[str] = None
     try:
         profiles = (control_client.list_inference_profiles(maxResults=100) or {}).get(
             "inferenceProfileSummaryList", []
         )
     except Exception as exc:
-        return Discovery(ok=False, reason=f"list_inference_profiles failed: {exc}", region=region)
+        profiles = []
+        profiles_error = _brief(exc)
 
     enabled = [(p.get("inferenceProfileId") or "", p.get("models") or []) for p in profiles]
     candidates = [pid for pid, models in enabled if _is_anthropic(pid, models)]
-    if not candidates:
-        return Discovery(
-            ok=False,
-            region=region,
-            reason=(
-                "no Anthropic inference profile enabled in this account and region; "
-                "request access in the Bedrock console Model catalog"
+    if candidates:
+        preferred = next(
+            (
+                c
+                for family in PREFERRED_FAMILIES
+                for c in candidates
+                if family in c and not c.startswith("global.")
             ),
+            candidates[0],
         )
-    preferred = next(
-        (
-            c
-            for family in PREFERRED_FAMILIES
-            for c in candidates
-            if family in c and not c.startswith("global.")
+        return Discovery(ok=True, model_id=preferred, candidates=candidates, region=region)
+
+    # No profile: the account may still be entitled to the model directly.
+    direct = discover_foundation_models(region, control_client)
+    if direct.ok or direct.reason:
+        return direct
+    return Discovery(
+        ok=False,
+        region=region,
+        candidates=[],
+        reason=(
+            "no Anthropic inference profile and no Anthropic foundation model "
+            "reported; "
+            + (profiles_error and f"profile listing failed: {profiles_error}; " or "")
+            + "submit the one-time Anthropic use-case form in the Bedrock console"
         ),
-        candidates[0],
     )
-    return Discovery(ok=True, model_id=preferred, candidates=candidates, region=region)
+
+
+def discover_foundation_models(region: str, control_client: Any) -> Discovery:
+    """Check direct foundation-model entitlement, and its agreement status.
+
+    Anthropic models need a first-time-use form per account or management account.
+    Until that clears, the status is ``PENDING`` and every invoke returns
+    ``AccessDeniedException`` -- so the status is reported rather than assumed,
+    and a pending agreement is told apart from an absent one.
+    """
+    try:
+        listing = control_client.list_foundation_models()
+    except Exception as exc:
+        return Discovery(ok=False, region=region, reason=f"list_foundation_models failed: {_brief(exc)}")
+
+    anthropic = [
+        m.get("modelId")
+        for m in (listing or {}).get("modelSummaries", [])
+        if "anthropic" in str(m.get("modelArn", "")).lower()
+    ]
+    anthropic = [m for m in anthropic if m]
+    if not anthropic:
+        return Discovery(ok=False, region=region, reason="no Anthropic model offered in this region")
+
+    ordered = sorted(
+        anthropic,
+        key=lambda mid: next((i for i, f in enumerate(PREFERRED_FAMILIES) if f in mid), len(PREFERRED_FAMILIES)),
+    )
+    statuses: Dict[str, str] = {}
+    for model_id in ordered:
+        try:
+            availability = control_client.get_foundation_model_availability(modelId=model_id)
+        except Exception as exc:
+            statuses[model_id] = f"error: {_brief(exc)}"
+            continue
+        status = ((availability or {}).get("agreementAvailability") or {}).get("status")
+        statuses[model_id] = str(status)
+        if status == "AVAILABLE":
+            return Discovery(ok=True, model_id=model_id, candidates=anthropic, region=region)
+
+    pending = [m for m, s in statuses.items() if s == "PENDING"]
+    return Discovery(
+        ok=False,
+        region=region,
+        candidates=anthropic,
+        reason=(
+            "Anthropic model access is "
+            + ("PENDING the one-time use-case form" if pending else "not granted")
+            + f"; statuses: {json.dumps(statuses)}"
+        ),
+    )
 
 
 def _is_anthropic(profile_id: str, models: List[Dict[str, Any]]) -> bool:

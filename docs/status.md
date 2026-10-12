@@ -22,8 +22,10 @@ the commands in [runbook.md](runbook.md).
 
 ## Not verified
 
-- **A successful Amazon Bedrock call.** This machine has no AWS credentials, so
-  a real completion has not been seen. The failure path has: an invalid-credential
+- **A successful Amazon Bedrock call.** No credentials on this machine yet, so
+  a real completion has not been seen. `scripts/verify-bedrock.sh` runs the check
+  through the endpoint the television uses, and `docs/bedrock-setup.md` explains
+  the ap-south-1 profile and the one-time Anthropic use-case form. The failure path has: an invalid-credential
   probe reached the Bedrock control plane and degraded to a labelled rules cue. `docs/bedrock.md` says
   exactly what to configure and what `/coach/status` will answer when it works.
 - **Rep-count accuracy against a human counting real reps.** No labelled clip

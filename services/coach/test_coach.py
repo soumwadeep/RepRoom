@@ -72,14 +72,32 @@ class StubRuntime:
 
 
 class StubControl:
-    def __init__(self, profiles=None, error=None):
+    def __init__(self, profiles=None, error=None, foundation=None, availability=None, list_error=None):
         self.profiles = profiles if profiles is not None else []
         self.error = error
+        self.foundation = foundation or []
+        self.availability = availability or {}
+        self.list_error = list_error
+        self.availability_calls = []
 
     def list_inference_profiles(self, **kwargs):
         if self.error:
             raise self.error
         return {"inferenceProfileSummaryList": self.profiles}
+
+    def list_foundation_models(self):
+        if self.list_error:
+            raise self.list_error
+        return {
+            "modelSummaries": [
+                {"modelId": mid, "modelArn": f"arn:aws:bedrock:us-east-1::foundation-model/{mid}"}
+                for mid in self.foundation
+            ]
+        }
+
+    def get_foundation_model_availability(self, modelId=None, **kwargs):
+        self.availability_calls.append(modelId)
+        return {"agreementAvailability": {"status": self.availability.get(modelId, "NOT_AVAILABLE")}}
 
 
 # --------------------------------------------------------------------- facts
@@ -217,10 +235,42 @@ def test_discovery_prefers_an_enabled_sonnet_profile():
     assert "us.meta.llama" not in result.candidates
 
 
-def test_discovery_reports_no_access_rather_than_guessing_a_model():
-    result = discover("us-east-1", StubControl(profiles=[{"inferenceProfileId": "us.meta.llama", "models": []}]))
+def test_discovery_falls_back_to_a_direct_foundation_model_when_no_profile_exists():
+    """Regions that serve the model directly have no inference profile at all.
+
+    Treating "no profile" as "no access" would be wrong, and would quietly leave
+    the app on its rule-based fallback in an account that could have generated.
+    """
+    control = StubControl(
+        profiles=[],
+        foundation=["meta.llama-x", "anthropic.claude-haiku-4-5", "anthropic.claude-sonnet-4-20250514-v1:0"],
+        availability={"anthropic.claude-sonnet-4-20250514-v1:0": "AVAILABLE"},
+    )
+    result = discover("us-east-1", control)
+    assert result.ok
+    assert result.model_id == "anthropic.claude-sonnet-4-20250514-v1:0"
+    # Sonnet is asked about before Haiku, not in listing order.
+    assert control.availability_calls[0].startswith("anthropic.claude-sonnet")
+
+
+def test_discovery_names_the_pending_use_case_form_as_the_blocker():
+    control = StubControl(
+        profiles=[],
+        foundation=["anthropic.claude-sonnet-4-20250514-v1:0"],
+        availability={"anthropic.claude-sonnet-4-20250514-v1:0": "PENDING"},
+    )
+    result = discover("us-east-1", control)
     assert not result.ok
-    assert "Model catalog" in result.reason
+    assert "use-case form" in result.reason
+    assert "PENDING" in result.reason
+    assert result.candidates == ["anthropic.claude-sonnet-4-20250514-v1:0"]
+
+
+def test_discovery_reports_no_anthropic_model_in_the_region():
+    control = StubControl(profiles=[], foundation=["meta.llama-x", "amazon.titan-text"])
+    result = discover("ap-south-1", control)
+    assert not result.ok
+    assert "no Anthropic model offered" in result.reason
 
 
 def test_discovery_needs_a_region():
@@ -230,7 +280,11 @@ def test_discovery_needs_a_region():
 
 
 def test_discovery_surfaces_a_control_plane_failure_as_a_reason():
-    result = discover("eu-west-1", StubControl(error=RuntimeError("Unable to locate credentials")))
+    control = StubControl(
+        error=RuntimeError("Unable to locate credentials"),
+        list_error=RuntimeError("Unable to locate credentials"),
+    )
+    result = discover("eu-west-1", control)
     assert not result.ok
     assert "credentials" in result.reason
 

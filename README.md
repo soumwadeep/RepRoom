@@ -109,7 +109,8 @@ apps/fire-tv/         Vega OS React Native app: 10-foot HUD, D-pad focus.
 benchmarks/           Labelled-clip harness. Where the accuracy claim is earned
                       or withheld.
 docs/                 Measurements, runbook, friction log, feature requests,
-                      Bedrock setup, and the verified/unverified split.
+                      Bedrock setup, submission text, verified/unverified split.
+infra/                The IAM policy a cue needs, and nothing more.
 scripts/              setup, dev, TLS.
 ```
 
