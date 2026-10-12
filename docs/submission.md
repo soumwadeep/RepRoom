@@ -1,6 +1,7 @@
 # Submission — Build, Ship, Shape: Amazon Developer Hackathon 2026
 
-Deadline: **Friday 23 October 2026, 12:00 PT.** Fill the Devpost fields from the
+Deadline: **Friday 23 October 2026, 12:00 PT.**
+Repo: **https://github.com/soumwadeep/RepRoom** (public, Apache-2.0). Fill the Devpost fields from the
 blocks below; anything in `[[double brackets]]` needs a real value first.
 
 ---
@@ -9,7 +10,7 @@ blocks below; anything in `[[double brackets]]` needs a real value first.
 
 | # | Item | Who |
 |---|---|---|
-| 1 | Create the public GitHub repo and push (commands in §7) | you |
+| 1 | ~~Create the public GitHub repo and push~~ **done 2026-10-12:** https://github.com/soumwadeep/RepRoom, public, license detected as Apache-2.0 | ✅ |
 | 2 | `aws configure` on this machine, then I run `/coach/status` and one real `converse()` call so the AWS Builder claim is verified rather than stubbed | you, then me |
 | 3 | Record ~15 labelled squats on your phone so the accuracy number stops being UNVERIFIED | you, then me |
 | 4 | Screen-record the demo (script in §6) and upload unlisted-public to YouTube | you |
@@ -155,8 +156,8 @@ video that the coach is running on its rule-based fallback.]]`
 
 ## 5. Open Source mini challenge (required field)
 
-- **Repo URL:** `[[https://github.com/USERNAME/RepRoom]]`
-- **GitHub username:** `[[soumwadeepguha]]`
+- **Repo URL:** https://github.com/soumwadeep/RepRoom
+- **GitHub username:** `soumwadeep`
 - **License:** Apache-2.0 (`LICENSE` at the repo root).
 - **What I did:** RepRoom is published as a new open-source project for this
   hackathon. Inside it, `packages/rep-engine` is separately packaged as
@@ -213,35 +214,40 @@ demo that admits what it hasn't proven is the rarest thing in the format.
 
 ## 7. Publishing the repo
 
-No `gh` CLI on this machine; HTTPS push via the keychain works.
+**Done.** Live at https://github.com/soumwadeep/RepRoom — public, `main`
+tracking `origin`, GitHub's license detector reporting `Apache-2.0`, and an
+unauthenticated `GET /repos/soumwadeep/RepRoom` returning 200, which is what
+"public" means in practice.
 
-```bash
-# 1. Create an empty PUBLIC repo named RepRoom at https://github.com/new
-#    (do not add a README, .gitignore or license — the local ones win)
-cd "/Volumes/SoumwadeepSSD/Repos/RepRoom"
-git remote add origin https://github.com/[[USERNAME]]/RepRoom.git
-git branch -M main
-git push -u origin main
-```
-
-Because the repo is public and carries an Apache-2.0 license, the
+Because it is public and carries an Apache-2.0 license, the
 `testing@devpost.com` and Amazon-collaborator invitations are **not needed** —
-that step only applies to private repos.
+that step only applies to private repos. If you add the reviewers anyway, do it
+on submission day: invitations expire after 7 days, and one sent today would
+lapse before the 23rd.
 
-Sanity-check before pushing:
+For any later change:
 
 ```bash
-git ls-files | wc -l          # 58 files
-du -sh .git                   # under 1 MB; models and node_modules are ignored
-git ls-files | grep -E "\.task|node_modules|\.vpkg" || echo "clean"
+cd "/Volumes/SoumwadeepSSD/Repos/RepRoom"
+git add -A && git commit -m "..." && git push
 ```
+
+Two things worth knowing about this machine, for next time:
+
+- There is no `gh` CLI, so a repo has to be created through the API or the web
+  UI. Pushing over HTTPS works because git's `osxkeychain` helper can read the
+  stored credential — the `security` command-line tool cannot, because the
+  keychain item's ACL is restricted to git.
+- The `PATCH /repos/{owner}/{repo}/topics` call returns 404 with this token even
+  with the `repo` scope and the preview media type, so the repo has no topics.
+  Cosmetic; add them in the web UI if you care.
 
 ---
 
 ## 8. Field-by-field checklist
 
 - [ ] Text description — §2
-- [ ] GitHub repo — public, Apache-2.0, pushed (§7)
+- [x] GitHub repo — https://github.com/soumwadeep/RepRoom, public, Apache-2.0 detected, pushed
 - [ ] Demo video under 3 minutes, public, English (§6)
 - [ ] Product feedback — §4
 - [ ] Tracks entered — Fire TV; AWS Builder; Open Source — §3
