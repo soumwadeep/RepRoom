@@ -23,10 +23,15 @@ consequence of a gap that is written up in `docs/friction-log.md`.
 
 ## Quickstart
 
+**Keep the project path free of spaces.** The Kepler manifest builder interpolates
+the project directory into a shell command without quoting it, so a project under
+a folder like `Github Repos` fails at the bundle step with
+`/bin/sh: /path/to/Github: is a directory`.
+
 ```bash
-scripts/setup.sh                      # venv, deps, pose models (~14 MB)
-.venv/bin/python -m pytest packages services   # 68 tests
-node --test apps/fire-tv                      # 19 tests, no browser needed
+scripts/setup.sh                               # venv, deps, pose models (~14 MB)
+.venv/bin/python -m pytest packages services   # 70 tests
+cd apps/fire-tv && npm install && npx jest     # 44 tests
 
 scripts/dev.sh                        # API on http://localhost:8420
 open http://localhost:8420/capture    # camera page; press Start, do squats
@@ -39,9 +44,22 @@ Using a phone as the camera needs TLS, because a browser only grants
 scripts/with-tls.sh                   # https://<lan-ip>:8420/capture
 ```
 
-The Fire TV app lives in `apps/fire-tv` and needs the Vega Developer Tools
-(`curl -fsSL https://sdk-installer.vega.labcollab.net/get_vvm.sh | bash`), which
-run on macOS or Ubuntu only.
+The television half needs the Vega Developer Tools — macOS or Ubuntu, 20 GB, no
+Windows — and then builds to a package the virtual device can run:
+
+```bash
+curl -fsSL https://sdk-installer.vega.labcollab.net/get_vvm.sh | bash
+vega sdk install
+cd apps/fire-tv && vega build && npx react-native build-vega --build-type Release
+vega virtual-device start --gui
+vega run-app build/aarch64-release/reproomtv_aarch64.vpkg
+vega device start-port-forwarding --port 8420 --forward false   # device -> host
+```
+
+That last flag is not a typo; see
+[the friction log](docs/friction-log.md). `docs/runbook.md` has the full
+sequence, including how to confirm the app really reached the API rather than
+assuming it did.
 
 ## What is verified, and what is not
 
@@ -51,9 +69,12 @@ run on macOS or Ubuntu only.
 | Form checks flag the fault they target | Verified | same suite; each check has a passing and a failing fixture |
 | MediaPipe recovers a pose from a JPEG | Verified | 4 integration tests, 20–100 ms/frame measured on Apple M1 |
 | The API serves that over HTTP | Verified | 16 service tests plus a live uvicorn smoke run |
-| The HUD refuses to render unmeasured numbers | Verified | 19 app tests |
+| The HUD refuses to render unmeasured numbers | Verified | 44 app tests, including screen-flow tests against a scripted API |
+| The app builds and runs on the Fire TV simulator | Verified | signed `.vpkg` for three architectures; `com.reproom.tv.main` running in the Vega Virtual Device, and its own `/health` + `/exercises` probes visible in the API access log |
 | **Rep counts a real person matches a human's count** | **UNVERIFIED** | no labelled clip corpus exists yet; `benchmarks/bench_clips.py` exits rather than invent one |
-| The app runs in the Vega Virtual Device | In progress | see `docs/status.md` |
+
+`docs/status.md` lists each claim with the command that proves it, and
+`docs/runbook.md` reproduces the whole thing end to end.
 
 ## The rule the codebase is organised around
 

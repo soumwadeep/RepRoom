@@ -104,13 +104,20 @@ function scriptedApi(handlers: Record<string, () => unknown> = {}) {
   return {impl: impl as typeof fetch, seen};
 }
 
+/**
+ * The probe path is two sequential fetches; under a loaded CI box the default
+ * 1 s wait is shorter than the scheduler's word, not shorter than the app's
+ * contract. The assertion is 'this eventually renders', so say that.
+ */
+const SETTLE = {timeout: 8000, interval: 25};
+
 const renderApp = (api: ReturnType<typeof scriptedApi>) =>
   render(<App fetchImpl={api.impl} initialApiBase="http://127.0.0.1:8420" />);
 
 it('starts on setup and lists what the API offers', async () => {
   const api = scriptedApi();
   const {getByText} = renderApp(api);
-  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy());
+  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy(), SETTLE);
   expect(getByText('PUSH-UP')).toBeTruthy();
   expect(api.seen).toContain('GET /health');
 });
@@ -125,21 +132,22 @@ it('refuses to list exercises when the API is not answering', async () => {
   const {getByText} = render(
     <App fetchImpl={api.impl} initialApiBase="http://127.0.0.1:9" />,
   );
-  await waitFor(() =>
-    expect(getByText(/no API answering at http:\/\/127\.0\.0\.1:9/)).toBeTruthy(),
+  await waitFor(
+    () => expect(getByText(/no API answering at http:\/\/127\.0\.0\.1:9/)).toBeTruthy(),
+    SETTLE,
   );
 });
 
 it('opens a session and puts the pairing code on screen', async () => {
   const api = scriptedApi();
   const {getByTestId, getByText} = renderApp(api);
-  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy());
+  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy(), SETTLE);
 
   await act(async () => {
     fireEvent.press(getByText('BODYWEIGHT SQUAT'));
   });
 
-  await waitFor(() => expect(getByTestId('session-code').props.children).toBe('k7d21f'));
+  await waitFor(() => expect(getByTestId('session-code').props.children).toBe('k7d21f'), SETTLE);
   expect(api.seen).toContain('POST /session');
   expect(getByText('6')).toBeTruthy();
   expect(getByText(/CAMERA JOINS WITH CODE/)).toBeTruthy();
@@ -149,12 +157,12 @@ it('opens a session and puts the pairing code on screen', async () => {
 it('renders measured reps, discards and an unmeasurable check as a dash', async () => {
   const api = scriptedApi();
   const {getByTestId, getByText} = renderApp(api);
-  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy());
+  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy(), SETTLE);
   await act(async () => {
     fireEvent.press(getByText('BODYWEIGHT SQUAT'));
   });
 
-  await waitFor(() => expect(getByTestId('rep-count').props.children).toBe(6));
+  await waitFor(() => expect(getByTestId('rep-count').props.children).toBe(6), SETTLE);
   expect(getByText('DISCARDED')).toBeTruthy();
   expect(getByText('1')).toBeTruthy();
   expect(getByText('\u2014')).toBeTruthy();
@@ -165,17 +173,17 @@ it('renders measured reps, discards and an unmeasurable check as a dash', async 
 it('finishes a set and reads the totals back from the server', async () => {
   const api = scriptedApi();
   const {getByText} = renderApp(api);
-  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy());
+  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy(), SETTLE);
   await act(async () => {
     fireEvent.press(getByText('BODYWEIGHT SQUAT'));
   });
-  await waitFor(() => expect(getByText('FINISH SET')).toBeTruthy());
+  await waitFor(() => expect(getByText('FINISH SET')).toBeTruthy(), SETTLE);
 
   await act(async () => {
     fireEvent.press(getByText('FINISH SET'));
   });
 
-  await waitFor(() => expect(getByText('SET COMPLETE')).toBeTruthy());
+  await waitFor(() => expect(getByText('SET COMPLETE')).toBeTruthy(), SETTLE);
   expect(api.seen).toContain('POST /session/k7d21f/stop');
   expect(getByText('9')).toBeTruthy();
   expect(getByText(/absolute/)).toBeTruthy();
@@ -186,22 +194,22 @@ it('keeps the summary honest when the totals never arrive', async () => {
     throw new Error('server went away');
   }});
   const {getByText} = renderApp(api);
-  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy());
+  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy(), SETTLE);
   await act(async () => {
     fireEvent.press(getByText('BODYWEIGHT SQUAT'));
   });
-  await waitFor(() => expect(getByText('FINISH SET')).toBeTruthy());
+  await waitFor(() => expect(getByText('FINISH SET')).toBeTruthy(), SETTLE);
   await act(async () => {
     fireEvent.press(getByText('FINISH SET'));
   });
-  await waitFor(() => expect(getByText('SET COMPLETE')).toBeTruthy());
+  await waitFor(() => expect(getByText('SET COMPLETE')).toBeTruthy(), SETTLE);
   expect(getByText(/will not guess at it/)).toBeTruthy();
 });
 
 it('re-probes when a different address is committed from the keypad', async () => {
   const api = scriptedApi();
   const {getByText} = renderApp(api);
-  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy());
+  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy(), SETTLE);
   const probesBefore = api.seen.filter((entry) => entry === 'GET /health').length;
 
   await act(async () => {
@@ -216,8 +224,9 @@ it('re-probes when a different address is committed from the keypad', async () =
     fireEvent.press(getByText('E'));
   });
 
-  await waitFor(() =>
-    expect(api.seen.filter((entry) => entry === 'GET /health').length).toBe(probesBefore + 1),
+  await waitFor(
+    () => expect(api.seen.filter((entry) => entry === 'GET /health').length).toBe(probesBefore + 1),
+    SETTLE,
   );
   expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy();
 });
@@ -225,7 +234,7 @@ it('re-probes when a different address is committed from the keypad', async () =
 it('does not re-probe when the committed address is the one already in use', async () => {
   const api = scriptedApi();
   const {getByText} = renderApp(api);
-  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy());
+  await waitFor(() => expect(getByText('BODYWEIGHT SQUAT')).toBeTruthy(), SETTLE);
   const probesBefore = api.seen.filter((entry) => entry === 'GET /health').length;
 
   await act(async () => {
