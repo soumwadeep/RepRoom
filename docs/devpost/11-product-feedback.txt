@@ -1,0 +1,17 @@
+What I used, and for what: the Vega Developer Tools for the whole build loop (vega project generate, vega build, npx react-native build-vega, vega virtual-device start, vega run-app); the vega device command set for install, launch, running-apps, run-cmd and port forwarding; React Native 0.83 on Vega via @amazon-devices/react-native-kepler 4.0 for the app; and Amazon Bedrock for the coaching sentence.
+
+What worked well: installing the SDK and booting the virtual device were one command each, and the VVD is fast - about 30 seconds to "Virtual device ready" on Apple Silicon, and smooth enough to develop against all evening. vega build validating manifest.toml and printing "manifest validation found 0 errors" plus an actionable note about the missing icon is the right shape for a build tool. The helloWorld template was genuinely a working starting point, and TVFocusGuideView and hasTVPreferredFocus behaved as documented, which is more than I can say for most TV SDKs. React Native needed no shim to run plain components on Vega.
+
+What needs work, in the order it cost me time:
+
+1. BLOCKER - a project in a folder whose name contains a space cannot be built. The Kepler manifest builder interpolates the project directory into a shell command unquoted, so the bundle step dies with "/bin/sh: /Volumes/.../Github: is a directory". vega build succeeds first, which leaves a plausible-looking package with no app inside. I moved my whole project to a space-free path before I understood that was the cause. Fix: pass an argument array instead of a shell string, and add a whitespace preflight to vega project doctor.
+
+2. MAJOR - the virtual device has no screen capture and no key injection. screencap and input are both absent from the device shell, so I could not screenshot the app from a script and could not press a D-pad button from a script. For a competition judged on a demo video, and for anyone wanting UI tests in CI, this is the biggest gap versus the Android emulator. I ended up proving the app ran by watching my own API's access log for the health probe the app issues.
+
+3. MINOR - "--forward true" is the direction you almost never want. Letting an app on the emulator reach a service on the host needs --forward false, and the help text's examples wrap so that both readings look plausible. --direction device-to-host|host-to-device would remove the guesswork.
+
+Also: the CLI installer aborts SDK setup when stdin is not a terminal while still exiting 0; vega project generate --outputDir writes the project into the directory rather than a subdirectory named after it; project names reject hyphens, so the folder and the project diverge; build paths contain a literal "undefined" segment; and the helloWorld template ships metro.config.js with git-diff "+" markers in its header comment.
+
+How onboarding felt: the docs got me from nothing to a running app on the emulator in one evening, which is the correct outcome for a first-time device SDK. The friction was concentrated where the docs could not be blamed - the space-in-path failure and the port-forward direction - and in the two things I most wanted to automate having no CLI surface.
+
+Would I build with it again: yes, and I would budget for the path-name constraint up front and for hand-driven UI testing. The platform is in open beta and behaves like it: the shape is right and the edges are sharp.

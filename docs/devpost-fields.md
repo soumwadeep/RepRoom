@@ -2,8 +2,11 @@
 
 Entry: https://devpost.com/submit-to/30992-build-ship-shape-amazon-developer-hackathon/manage/submissions
 
-Ordered the way the submission form asks. Each fenced block is the literal
-answer; nothing in it needs editing except the two marked `<< >>`.
+**You do not need to copy from this file.** Run `scripts/devpost-clipboard.sh`
+and it puts each answer on your clipboard one field at a time, so the whole form
+is a sequence of Cmd+V presses. The canonical text of every answer lives in
+`docs/devpost/*.txt`, in form order; this document is the readable review copy of
+the same content, and `docs/devpost/` wins if they ever disagree.
 
 **Before you paste anything:** the existing entry's URL slug is
 `…/submissions/1211873-jio-tv-plus/…`. If that entry was created for a different

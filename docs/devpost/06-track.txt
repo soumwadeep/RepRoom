@@ -1,0 +1,3 @@
+Primary track: Fire TV. Mini challenges: AWS Builder and Open Source.
+
+Fire TV track: a React Native application targeting Vega OS, built with the Vega Developer Tools to a signed .vpkg for armv7, x86_64 and aarch64, installed and running on the Vega Virtual Device. The demo video shows the app running on the simulator, which is the only Fire TV surface available for this build.
