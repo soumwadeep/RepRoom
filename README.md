@@ -30,7 +30,7 @@ a folder like `Github Repos` fails at the bundle step with
 
 ```bash
 scripts/setup.sh                               # venv, deps, pose models (~14 MB)
-.venv/bin/python -m pytest packages services   # 95 tests
+.venv/bin/python -m pytest packages services   # 97 tests
 cd apps/fire-tv && npm install && npx jest     # 60 tests
 
 scripts/dev.sh                        # API on http://localhost:8420
